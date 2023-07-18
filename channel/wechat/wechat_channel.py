@@ -7,7 +7,6 @@ wechat channel
 import io
 import json
 import os
-import threading
 import time
 
 import requests
@@ -25,18 +24,9 @@ from config import conf, get_appdata_dir
 from lib import itchat
 from lib.itchat.content import *
 import threading
+from flask import request
+from flask import jsonify
 app = Flask(__name__)
-@itchat.msg_register([VERIFYMSG])
-def handler_verify_msg(msg):
-    try:
-        cmsg = WechatMessage(msg, False)
-    except NotImplementedError as e:
-        logger.debug("[WX]verify message {} skipped: {}".format(msg["MsgId"], e))
-        return None
-    WechatChannel().handle_verify(cmsg)
-    return None
-
-
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
 def handler_single_msg(msg):
     try:
@@ -110,11 +100,21 @@ def qrCallback(uuid, status, qrcode):
         qr.make(fit=True)
         qr.print_ascii(invert=True)
 
-@app.route("/")
+@app.route("/friends")
 def hello():
-    itchat.get_friends()
-    return "Hello, World!"
-
+    return itchat.get_friends()
+@app.route("/sendFriendsMsg")
+def sendFriendsMsg():
+    name= request.args.get('name')
+    message = request.args.get('message')
+    toUserName = itchat.search_friends(name=name)[0]['UserName']
+    return itchat.send_msg(message, toUserName)
+@app.route("/sendChatroomMsg")
+def sendChatroomMsg():
+    name= request.args.get('name')
+    message = request.args.get('message')
+    toUserName = itchat.search_chatrooms(name=name)[0]['UserName']
+    return itchat.send_msg(message, toUserName)
 
 @singleton
 class WechatChannel(ChatChannel):
@@ -163,8 +163,8 @@ class WechatChannel(ChatChannel):
         logger.debug("[WX]receive verify msg: {}".format(msg))
         if conf().get("auto_accept_friend",True) == True:
             logger.info("[WX]auto accept friend request")
-            itchat.add_friend(**msg["Text"])
-            itchat.send_msg("您好，我是小猪佩奇，欢迎使用我的服务", msg["RecommendInfo"]["UserName"])
+            itchat.accept_friend(userName=msg.content["userName"])
+            itchat.send_msg("您好，我是小猪佩奇，欢迎使用我的服务", toUserName=msg.content["userName"])
 
     @time_checker
     @_check
@@ -197,7 +197,7 @@ class WechatChannel(ChatChannel):
         elif cmsg.ctype in [ContextType.JOIN_GROUP, ContextType.PATPAT]:
             logger.debug("[WX]receive note msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
-            logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+           # logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
             pass
         else:
             logger.debug("[WX]receive group msg: {}".format(cmsg.content))

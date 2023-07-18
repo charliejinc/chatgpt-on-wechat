@@ -372,7 +372,7 @@ def set_pinned(self, userName, isPinned=True):
     r = self.s.post(url, json=data, headers=headers)
     return ReturnValue(rawResponse=r)
 
-
+#好友添加验收通过
 def accept_friend(self, userName, v4='', autoUpdate=True):
     url = f"{self.loginInfo['url']}/webwxverifyuser?r={int(time.time())}&pass_ticket={self.loginInfo['pass_ticket']}"
     data = {
