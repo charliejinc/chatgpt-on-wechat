@@ -8,6 +8,9 @@ from channel import channel_factory
 from common.log import logger
 from config import conf, load_config
 from plugins import *
+from flask import Flask
+
+
 
 
 def sigterm_handler_wrap(_signo):
@@ -48,6 +51,7 @@ def run():
 
         # startup channel
         channel.startup()
+
     except Exception as e:
         logger.error("App startup failed!")
         logger.exception(e)

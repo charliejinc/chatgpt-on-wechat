@@ -11,6 +11,7 @@ import threading
 import time
 
 import requests
+from flask import Flask
 
 from bridge.context import *
 from bridge.reply import *
@@ -23,6 +24,17 @@ from common.time_check import time_checker
 from config import conf, get_appdata_dir
 from lib import itchat
 from lib.itchat.content import *
+import threading
+app = Flask(__name__)
+@itchat.msg_register([VERIFYMSG])
+def handler_verify_msg(msg):
+    try:
+        cmsg = WechatMessage(msg, False)
+    except NotImplementedError as e:
+        logger.debug("[WX]verify message {} skipped: {}".format(msg["MsgId"], e))
+        return None
+    WechatChannel().handle_verify(cmsg)
+    return None
 
 
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
@@ -98,6 +110,11 @@ def qrCallback(uuid, status, qrcode):
         qr.make(fit=True)
         qr.print_ascii(invert=True)
 
+@app.route("/")
+def hello():
+    itchat.get_friends()
+    return "Hello, World!"
+
 
 @singleton
 class WechatChannel(ChatChannel):
@@ -108,6 +125,11 @@ class WechatChannel(ChatChannel):
         self.receivedMsgs = ExpiredDict(60 * 60 * 24)
 
     def startup(self):
+        threading.Thread(target=self.run_wechat).start()
+        app.run()
+
+
+    def run_wechat(self):
         itchat.instance.receivingRetryCount = 600  # 修改断线超时时间
         # login by scan QRCode
         hotReload = conf().get("hot_reload", False)
@@ -135,6 +157,14 @@ class WechatChannel(ChatChannel):
     #        msg: ChatMessage消息对象
     #        origin_ctype: 原始消息类型，语音转文字后，私聊时如果匹配前缀失败，会根据初始消息是否是语音来放宽触发规则
     #        desire_rtype: 希望回复类型，默认是文本回复，设置为ReplyType.VOICE是语音回复
+
+    # 处理用户添加好友请求
+    def handle_verify(self, msg):
+        logger.debug("[WX]receive verify msg: {}".format(msg))
+        if conf().get("auto_accept_friend",True) == True:
+            logger.info("[WX]auto accept friend request")
+            itchat.add_friend(**msg["Text"])
+            itchat.send_msg("您好，我是小猪佩奇，欢迎使用我的服务", msg["RecommendInfo"]["UserName"])
 
     @time_checker
     @_check
@@ -167,7 +197,7 @@ class WechatChannel(ChatChannel):
         elif cmsg.ctype in [ContextType.JOIN_GROUP, ContextType.PATPAT]:
             logger.debug("[WX]receive note msg: {}".format(cmsg.content))
         elif cmsg.ctype == ContextType.TEXT:
-            # logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
+            logger.debug("[WX]receive group msg: {}, cmsg={}".format(json.dumps(cmsg._rawmsg, ensure_ascii=False), cmsg))
             pass
         else:
             logger.debug("[WX]receive group msg: {}".format(cmsg.content))

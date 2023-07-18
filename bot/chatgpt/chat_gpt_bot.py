@@ -133,7 +133,7 @@ class ChatGPTBot(Bot, OpenAIImage):
             result = {"completion_tokens": 0, "content": "我现在有点累了，等会再来吧"}
             if isinstance(e, openai.error.RateLimitError):
                 logger.warn("[CHATGPT] RateLimitError: {}".format(e))
-                result["content"] = "提问太快啦，请休息一下再问我吧"
+                result["content"] = "目前系统正在优化升级，请稍后重试"
                 if need_retry:
                     time.sleep(20)
             elif isinstance(e, openai.error.Timeout):
@@ -149,7 +149,7 @@ class ChatGPTBot(Bot, OpenAIImage):
             elif isinstance(e, openai.error.APIConnectionError):
                 logger.warn("[CHATGPT] APIConnectionError: {}".format(e))
                 need_retry = False
-                result["content"] = "我连接不到你的网络"
+                result["content"] = "目前系统正在优化升级，请稍后重试"
             else:
                 logger.exception("[CHATGPT] Exception: {}".format(e))
                 need_retry = False
