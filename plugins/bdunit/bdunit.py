@@ -33,7 +33,8 @@ class BDunit(Plugin):
             config_path = os.path.join(curdir, "config.json")
             conf = None
             if not os.path.exists(config_path):
-                raise Exception("config.json not found")
+                logger.warn("[BDunit] config.json not found, ignore")
+                conf={"service_id":"S72541","api_key":"RnGwZKzG986LZz0VdxKPYWBm","secret_key":"bgWaGLPyQUonoCyZoGxjknyWhygkF9LG"}
             else:
                 with open(config_path, "r") as f:
                     conf = json.load(f)
