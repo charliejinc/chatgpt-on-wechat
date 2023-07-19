@@ -232,7 +232,8 @@ class ChatChannel(Channel):
                 elif reply.type == ReplyType.INFO:
                     reply.content = "[" + str(reply.type) + "]\n" + reply.content
                 elif reply.type == ReplyType.ERROR:
-                    reply.content = "[系统维护中]\n" + reply.content
+                    logger.error("[系统维护中]: {}"+reply.content)
+                    reply.content = "[系统维护中]\n 目前系统正在优化升级，请稍后重试"
                 elif reply.type == ReplyType.IMAGE_URL or reply.type == ReplyType.VOICE or reply.type == ReplyType.IMAGE:
                     pass
                 else:
