@@ -30,15 +30,13 @@ class BDunit(Plugin):
         super().__init__()
         try:
             curdir = os.path.dirname(__file__)
-            # config_path = os.path.join(curdir, "config.json")
+            config_path = os.path.join(curdir, "config.json")
             conf = None
-            # if not os.path.exists(config_path):
-            #     logger.warn("[BDunit] config.json not found, ignore")
-            conf = {"service_id": "S72541", "api_key": "RnGwZKzG986LZz0VdxKPYWBm",
-                    "secret_key": "bgWaGLPyQUonoCyZoGxjknyWhygkF9LG"}
-            # else:
-            #     with open(config_path, "r") as f:
-            #         conf = json.load(f)
+            if not os.path.exists(config_path):
+                logger.warn("[BDunit] config.json not found, ignore")
+            else:
+                with open(config_path, "r") as f:
+                    conf = json.load(f)
             self.service_id = conf["service_id"]
             self.api_key = conf["api_key"]
             self.secret_key = conf["secret_key"]
@@ -78,8 +76,7 @@ class BDunit(Plugin):
         Returns:
             string: access_token
         """
-        url = "https://aip.baidubce.com/oauth/2.0/token?client_id={}&client_secret={}&grant_type=client_credentials".format(
-            self.api_key, self.secret_key)
+        url = "https://aip.baidubce.com/oauth/2.0/token?client_id={}&client_secret={}&grant_type=client_credentials".format(self.api_key, self.secret_key)
         payload = ""
         headers = {"Content-Type": "application/json", "Accept": "application/json"}
 
@@ -189,8 +186,7 @@ class BDunit(Plugin):
                     logger.warning(e)
                     return []
             for response in response_list:
-                if "schema" in response and "intent" in response["schema"] and "slots" in response["schema"] and \
-                        response["schema"]["intent"] == intent:
+                if "schema" in response and "intent" in response["schema"] and "slots" in response["schema"] and response["schema"]["intent"] == intent:
                     return response["schema"]["slots"]
             return []
         else:
@@ -224,10 +220,9 @@ class BDunit(Plugin):
             answer = {}
             for response in response_list:
                 if (
-                        "schema" in response
-                        and "intent_confidence" in response["schema"]
-                        and (
-                        not answer or response["schema"]["intent_confidence"] > answer["schema"]["intent_confidence"])
+                    "schema" in response
+                    and "intent_confidence" in response["schema"]
+                    and (not answer or response["schema"]["intent_confidence"] > answer["schema"]["intent_confidence"])
                 ):
                     answer = response
             return answer["action_list"][0]["say"]
