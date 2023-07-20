@@ -3,6 +3,6 @@
 unset KUBECONFIG
 
 cd .. && docker build -f docker/Dockerfile.latest \
-             -t zhayujie/chatgpt-on-wechat .
+             -t charliejinc/chatgpt-on-wechat .
 
-docker tag zhayujie/chatgpt-on-wechat zhayujie/chatgpt-on-wechat:$(date +%y%m%d)
+docker tag ghcr.io/charliejinc/chatgpt-on-wechat ghcr.io/charliejinc/chatgpt-on-wechat:$(date +%y%m%d)
