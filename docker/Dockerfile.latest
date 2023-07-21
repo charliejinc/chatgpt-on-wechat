@@ -1,4 +1,4 @@
-FROM python:3.12.0b4-alpine3.18
+FROM python:3.10-slim
 
 LABEL maintainer="foo@bar.com"
 ARG TZ='Asia/Shanghai'
@@ -6,20 +6,19 @@ ARG TZ='Asia/Shanghai'
 ARG CHATGPT_ON_WECHAT_VER
 
 RUN echo /etc/apt/sources.list
-
-
-# RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
-
-
- # 更换 pip 源
-RUN mkdir ~/.pip && \
-    echo "[global]\nindex-url = https://mirrors.aliyun.com/pypi/simple/\ntrusted-host = mirrors.aliyun.com" > ~/.pip/pip.conf
+RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
 ENV BUILD_PREFIX=/app
+
 ADD . ${BUILD_PREFIX}
-RUN  cd ${BUILD_PREFIX} \
+
+RUN apt-get update \
+    &&apt-get install -y --no-install-recommends bash ffmpeg espeak libavcodec-extra\
+    && cd ${BUILD_PREFIX} \
     && cp config-template.json config.json \
     && /usr/local/bin/python -m pip install --no-cache --upgrade pip \
-    && pip install --no-cache -r requirements.txt
+    && pip install --no-cache -r requirements.txt \
+    && pip install --no-cache -r requirements-optional.txt \
+    && pip install azure-cognitiveservices-speech
 
 WORKDIR ${BUILD_PREFIX}
 
@@ -32,5 +31,5 @@ RUN chmod +x /entrypoint.sh \
     && chown -R noroot:noroot /home/noroot ${BUILD_PREFIX} /usr/local/lib
 
 USER noroot
-
+EXPOSE 5000
 ENTRYPOINT ["/entrypoint.sh"]
