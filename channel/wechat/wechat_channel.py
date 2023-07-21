@@ -101,8 +101,12 @@ def qrCallback(uuid, status, qrcode):
         qr.print_ascii(invert=True)
 
 @app.route("/friends")
-def hello():
+def friends():
     return itchat.get_friends()
+
+@app.route("/chatrooms")
+def chatrooms():
+    return itchat.get_chatrooms()
 @app.route("/sendFriendsMsg")
 def sendFriendsMsg():
     name= request.args.get('name')
