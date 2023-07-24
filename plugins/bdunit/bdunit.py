@@ -60,7 +60,7 @@ class BDunit(Plugin):
             logger.debug("[BDunit] Baidu_AI Intent= %s", intent)
             reply = Reply()
             reply.type = ReplyType.TEXT
-            reply.content = self.getSay(parsed)
+            reply.content = self.getSay(parsed).replace("\\n", "\n")
             e_context["reply"] = reply
             e_context.action = EventAction.BREAK_PASS  # 事件结束，并跳过处理context的默认逻辑
         else:
