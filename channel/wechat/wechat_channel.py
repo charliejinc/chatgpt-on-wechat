@@ -9,10 +9,8 @@ import json
 import os
 import random
 import time
-
 import requests
 from flask import Flask
-
 from bridge.context import *
 from bridge.reply import *
 from channel.chat_channel import ChatChannel
@@ -26,7 +24,6 @@ from lib import itchat
 from lib.itchat.content import *
 import threading
 from flask import request
-from flask import jsonify
 app = Flask(__name__)
 @itchat.msg_register([TEXT, VOICE, PICTURE, NOTE])
 def handler_single_msg(msg):
@@ -146,11 +143,11 @@ def get_accept_friend(friend_info, max_retries=5):
         return
 @app.route("/friends")
 def friends():
-    return itchat.get_friends()
+    return itchat.get_friends(update=True)
 
 @app.route("/chatrooms")
 def chatrooms():
-    return itchat.get_chatrooms()
+    return itchat.get_chatrooms(update=True)
 @app.route("/sendFriendsMsg")
 def sendFriendsMsg():
     name= request.args.get('name')
@@ -173,6 +170,7 @@ class WechatChannel(ChatChannel):
         self.receivedMsgs = ExpiredDict(60 * 60 * 24)
 
     def startup(self):
+        logger.info("个人微信WechatChannel startup")
         threading.Thread(target=self.run_wechat).start()
         app.run(host="0.0.0.0")
 
