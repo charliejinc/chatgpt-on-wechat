@@ -40,7 +40,7 @@ class Hello(Plugin):
         if e_context["context"].type == ContextType.PATPAT:
             e_context["context"].type = ContextType.TEXT
             msg: ChatMessage = e_context["context"]["msg"]
-            e_context["context"].content = f"请你随机使用一种风格介绍你自己，并告诉用户输入#help可以查看帮助信息。"
+            e_context["context"].content = f"请你随机使用一种风格介绍你自己，并且表示自己一直都在你是身边，有什么可以为你服务的,控制在100字以内。"
             e_context.action = EventAction.BREAK  # 事件结束，进入默认处理逻辑
             return
 
