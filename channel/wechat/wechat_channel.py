@@ -141,25 +141,41 @@ def get_accept_friend(friend_info, max_retries=5):
     else:
         logger.error("达到最大重试次数，添加好友失败")
         return
-@app.route("/friends")
+@app.route("/lianxin-wechat/friends")
 def friends():
     return itchat.get_friends(update=True)
 
-@app.route("/chatrooms")
+@app.route("/lianxin-wechat/chatrooms")
 def chatrooms():
     return itchat.get_chatrooms(update=True)
-@app.route("/sendFriendsMsg")
+@app.route("/lianxin-wechat/sendFriendsMsg" ,methods=['POST'])
 def sendFriendsMsg():
-    name= request.args.get('name')
-    message = request.args.get('message')
-    toUserName = itchat.search_friends(name=name)[0]['UserName']
+    json = request.get_json()
+    name= json['name']
+    message = json['message']
+    toUserName = json['userName']
+    if name is not None and toUserName is None:
+        toUserName = itchat.search_friends(name=name)[0]['UserName']
     return itchat.send_msg(message, toUserName)
-@app.route("/sendChatroomMsg")
+@app.route("/lianxin-wechat/sendChatroomMsg" ,methods=['POST'])
 def sendChatroomMsg():
-    name= request.args.get('name')
-    message = request.args.get('message')
-    toUserName = itchat.search_chatrooms(name=name)[0]['UserName']
+    json = request.get_json()
+    name = json['name']
+    message = json['message']
+    toUserName = json['userName']
+    if name is not None and toUserName is None:
+        toUserName = itchat.search_chatrooms(name=name)[0]['UserName']
     return itchat.send_msg(message, toUserName)
+#批量发送群消息
+@app.route("/lianxin-wechat/batchSendChatroomMsg",methods=['POST'])
+def batchSendChatroomMsg():
+    json= request.get_json()
+    message= json['message']
+    roomList= json['roomList']
+    for toUserName in roomList:
+        itchat.send_msg(message, toUserName)
+
+    return "success"
 
 @singleton
 class WechatChannel(ChatChannel):
@@ -172,7 +188,7 @@ class WechatChannel(ChatChannel):
     def startup(self):
         logger.info("个人微信WechatChannel startup")
         threading.Thread(target=self.run_wechat).start()
-        app.run(host="0.0.0.0")
+        app.run(host="0.0.0.0", port=6514, debug=True)
 
 
     def run_wechat(self):
