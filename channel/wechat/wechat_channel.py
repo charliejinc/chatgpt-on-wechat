@@ -188,7 +188,7 @@ class WechatChannel(ChatChannel):
     def startup(self):
         logger.info("个人微信WechatChannel startup")
         threading.Thread(target=self.run_wechat).start()
-        app.run(host="0.0.0.0", port=6514, debug=True)
+        app.run(host="0.0.0.0")
 
 
     def run_wechat(self):
