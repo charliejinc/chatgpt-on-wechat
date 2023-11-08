@@ -190,8 +190,8 @@ class WechatChannel(ChatChannel):
 
     def startup(self):
         logger.info("个人微信WechatChannel startup")
-        threading.Thread(target=self.run_wechat).start()
-        app.run(host="0.0.0.0")
+        self.run_wechat()
+        app.run(host="0.0.0.0",port="8414")
 
 
     def run_wechat(self):
@@ -209,7 +209,7 @@ class WechatChannel(ChatChannel):
         self.name = itchat.instance.storageClass.nickName
         logger.info("Wechat login success, user_id: {}, nickname: {}".format(self.user_id, self.name))
         # start message listener
-        itchat.run()
+        itchat.run(blockThread=False)
 
     # handle_* 系列函数处理收到的消息后构造Context，然后传入produce函数中处理Context和发送回复
     # Context包含了消息的所有信息，包括以下属性
