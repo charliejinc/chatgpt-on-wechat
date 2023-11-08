@@ -15,7 +15,7 @@ class BaiduWenxinSession(Session):
         super().__init__(session_id, system_prompt)
         self.model = model
         # 百度文心不支持system prompt
-        # self.reset()
+        #self.reset()
 
     def discard_exceeding(self, max_tokens, cur_tokens=None):
         precise = True
